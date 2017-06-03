@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/mongo-lecture-review');
+mongoose.connect('mongodb://localhost/mongo1');
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +21,26 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
+const BlogSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  author: {
+    type: String,
+    required: true,
+  },
+  text: {
+    type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Blog = mongoose.model('Blog', BlogSchema);
 
 app.get('/', (req, res) => {
   res.send('hello world!');
@@ -59,6 +79,42 @@ app.post('/users', (req, res) => {
   newUser.save((err, user) => {
     if (err) return res.send(err);
     res.send(user);
+  });
+});
+
+app.post('/posts', (req, res) => {
+  const newBlog = new Blog(req.body);
+  newBlog.save((err, blog) => {
+    if (err) return res.send(err);
+    res.send(blog);
+  });
+});
+
+app.get('/posts', (req, res) => {
+  Blog.find({}, (err, blogs) => {
+    if (err) return res.send(err);
+    res.send(blogs);
+  });
+});
+
+app.put('/posts/:id', (req, res) => {
+  Blog.findById(req.params.id, (err, blog) => {
+    if (err) return res.send(err);
+    blog.title = req.body.title;
+    blog.save((err, blog) => {
+      if (err) return res.send(err);
+      res.send(blog);
+    });
+  });
+});
+
+app.delete('/posts/:id', (req, res) => {
+  Blog.findById(req.params.id, (err, blog) => {
+    if (err) return res.send(err);
+    blog.remove((err, blog) => {
+      if (err) return res.send(err);
+      res.send(blog);
+    });
   });
 });
 
